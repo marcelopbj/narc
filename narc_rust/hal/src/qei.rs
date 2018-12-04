@@ -2,15 +2,17 @@ use core::u16;
 
 use embedded_hal::{Qei as QeiExt, Direction};
 
-use stm32l052::{TIM2};
+use stm32l052::{TIM2, TIM22};
 
-use gpio::gpioa::{PA0, PA1};
+use gpio::gpioa::{PA0, PA1, PA6, PA7};
 use gpio::{Analog};
-use rcc::{APB1};
+use rcc::{APB1, APB2};
 
 pub trait Pins<Tim> {}
 
 impl Pins<TIM2> for (PA0<Analog>, PA1<Analog>) {}
+
+impl Pins<TIM22> for (PA6<Analog>, PA7<Analog>) {}
 
 pub struct Qei<TIM, PINS> {
     tim: TIM,
@@ -26,11 +28,20 @@ impl<PINS> Qei<TIM2, PINS> {
     }
 }
 
+impl<PINS> Qei<TIM22, PINS> {
+    pub fn tim22(tim: TIM22, pins: PINS, apb: &mut APB2) -> Self 
+    where 
+        PINS: Pins<TIM22> 
+    {
+        Qei::_tim22(tim, pins, apb)
+    }
+}
+
 macro_rules! hal {
-    ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident),)*) => {
+    ($($TIMX:ident: ($timX:ident, $APBX:ident, $timXen:ident, $timXrst:ident),)*) => {
         $(
             impl<PINS> Qei<$TIMX, PINS> {
-                fn $timX(tim: $TIMX, pins: PINS, apb: &mut APB1) -> Self {
+                fn $timX(tim: $TIMX, pins: PINS, apb: &mut $APBX) -> Self {
                     apb.enr().modify(|_, w| w.$timXen().set_bit());
                     apb.rstr().modify(|_, w| w.$timXrst().set_bit());
                     apb.rstr().modify(|_, w| w.$timXrst().clear_bit());
@@ -86,5 +97,6 @@ macro_rules! hal {
 }
 
 hal! {
-    TIM2: (_tim2, tim2en, tim2rst),
+    TIM2: (_tim2, APB1, tim2en, tim2rst),
+    TIM22: (_tim22, APB2, tim22en, tim22rst),
 }
