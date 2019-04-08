@@ -101,4 +101,4 @@ use core::panic::PanicInfo;
      loop {
          atomic::compiler_fence(Ordering::SeqCst)
      }
- }
+ }0

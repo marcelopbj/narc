@@ -1,12 +1,11 @@
 use core::ptr;
 
-pub use embedded_hal::spi::{Mode, Phase, Polarity};
-use embedded_hal::blocking;
+pub use embedded_hal::spi::{FullDuplex, Mode, Phase, Polarity};
 use nb;
-use stm32l052::SPI1;
+use stm32l052::{SPI1};
 
+use gpio::gpioa::{PA8, PA15};
 use gpio::gpioa::{PA5, PA6, PA7};
-use gpio::{AF0, Analog};
 use rcc::{APB2, Clocks};
 use time::Hertz;
 
