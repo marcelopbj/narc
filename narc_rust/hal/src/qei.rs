@@ -2,29 +2,68 @@ use core::u16;
 
 use embedded_hal::{Qei as QeiExt, Direction};
 
+<<<<<<< HEAD
 use stm32l052::{TIM2, TIM22};
 
 use gpio::gpioa::{PA0, PA1, PA6, PA7};
 use gpio::{Analog};
 use rcc::{APB1, APB2};
+=======
+use stm32l052::{TIM21, TIM22};
+
+use gpio::gpioa::{PA2, PA3, PA6, PA7};
+use gpio::{AF0, AF5};
+use rcc::{APB2};
+
+pub struct Qei<TIM, PINS> {
+    tim: TIM,
+    pins: PINS
+}
+>>>>>>> temp
 
 pub trait Pins<Tim> {}
 
-impl Pins<TIM2> for (PA0<Analog>, PA1<Analog>) {}
+impl Pins<TIM21> for (PA2<AF0>, PA3<AF0>) {}
 
+<<<<<<< HEAD
 impl Pins<TIM22> for (PA6<Analog>, PA7<Analog>) {}
 
 pub struct Qei<TIM, PINS> {
     tim: TIM,
     pins: PINS,
+=======
+impl Pins<TIM22> for (PA6<AF5>, PA7<AF5>) {}
+
+pub trait QeiFunc: Sized {
+    type tim;
+    type apb;
+
+    fn qei<PINS>(self, pins: PINS, apb: &mut Self::apb) -> Qei<Self::tim, PINS>
+    where PINS: Pins<Self>;
 }
 
-impl<PINS> Qei<TIM2, PINS> {
-    pub fn tim2(tim: TIM2, pins: PINS, apb: &mut APB1) -> Self 
+impl QeiFunc for TIM21{
+    type tim = Self;
+    type apb = APB2;
+
+    fn qei<PINS>(self, pins: PINS, apb: &mut Self::apb) -> Qei<Self::tim, PINS>
     where 
-        PINS: Pins<TIM2> 
+        PINS: Pins<TIM21> 
     {
-        Qei::_tim2(tim, pins, apb)
+        Qei::_tim21(self, pins, apb)
+    }
+>>>>>>> temp
+}
+
+impl QeiFunc for TIM22{
+    type tim = Self;
+    type apb = APB2;
+
+    fn qei<PINS>(self, pins: PINS, apb: &mut Self::apb) -> Qei<Self::tim, PINS>
+    where 
+        PINS: Pins<TIM22> 
+    {
+        Qei::_tim22(self, pins, apb)
     }
 }
 
@@ -55,12 +94,15 @@ macro_rules! hal {
                     tim.ccer.modify(|_, w| w
                                             .cc1e().set_bit()
                                             .cc1p().clear_bit()
+                                            .cc1np().clear_bit()
                                             .cc2e().set_bit()
-                                            .cc2p().clear_bit());
+                                            .cc2p().clear_bit()
+                                            .cc2np().clear_bit());
 
                     // Encoder mode 3
                     tim.smcr.modify(|_, w| unsafe { w.sms().bits(0b011) });
-                    tim.arr.modify(|_, w| unsafe { w.arr_l().bits(u16::MAX) });
+                    tim.psc.modify(|_, w| unsafe { w.psc().bits(0) });
+                    tim.arr.modify(|_, w| unsafe { w.arr().bits(u16::MAX) });
                     tim.cr1.write(|w| w.cen().set_bit());
 
                     Qei { tim, pins }
@@ -69,13 +111,17 @@ macro_rules! hal {
                 pub fn release(self) -> ($TIMX, PINS) {
                     (self.tim, self.pins)
                 }
+
+                pub fn reset(&self) {
+                    self.tim.cnt.write(|w| unsafe{ w.cnt().bits(0) });
+                }
             }
 
             impl<PINS> QeiExt for Qei<$TIMX, PINS> {
                 type Count = u16;
 
-                fn count(&self) -> u16 {
-                    self.tim.cnt.read().cnt_l().bits()
+                fn count(&self) -> Self::Count {
+                    self.tim.cnt.read().cnt().bits()
                 }
 
                 fn direction(&self) -> Direction {
@@ -86,17 +132,17 @@ macro_rules! hal {
                     }
                 }
             }
-
-            impl<PINS> Qei<$TIMX, PINS> {
-                fn reset(&self) {
-                    self.tim.cnt.write(|w| unsafe{ w.cnt_l().bits(0) });
-                }
-            }
-        )+        
+        )+
     };
 }
 
 hal! {
+<<<<<<< HEAD
     TIM2: (_tim2, APB1, tim2en, tim2rst),
     TIM22: (_tim22, APB2, tim22en, tim22rst),
 }
+=======
+    TIM21: (_tim21, APB2, tim21en, tim21rst),
+    TIM22: (_tim22, APB2, tim22en, tim22rst),
+}
+>>>>>>> temp

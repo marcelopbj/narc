@@ -80,11 +80,6 @@
 //!
 //! ```
 
-
-
-
-
-
 use core::marker::PhantomData;
 use core::mem;
 
@@ -92,7 +87,7 @@ use cast::{u16, u32};
 use embedded_hal::{PwmPin};
 use stm32l052::{TIM2};
 
-use gpio::gpioa::{PA0, PA1, PA2, PA3, PA5, PA15};
+use gpio::gpioa::{PA0, PA1, PA5, PA15};
 use gpio::{AF2, AF5};
 use rcc::{APB1, Clocks};
 use time::Hertz;
@@ -171,7 +166,7 @@ impl PwmExt for TIM2 {
         PINS: Pins<Self>,
         T: Into<Hertz>,
     {
-        tim2(self, _pins, freq.into(), clocks, apb)
+        _tim2(self, _pins, freq.into(), clocks, apb)
     }
 }
 
@@ -224,18 +219,15 @@ macro_rules! hal {
                         .modify(|_, w| unsafe{ w.oc4pe().set_bit().oc4m().bits(pwm1) });
                 }
 
-                tim.cr1.write(|w| w.cen().set_bit()); 
+                tim.cr1.write(|w| w.cen().set_bit());
 
                 tim.egr.write(|w| w.ug().set_bit());
-                
                 let clk = clocks.pclk1().0 * if clocks.ppre1() == 1 { 1 } else { 2 };
                 let freq = freq.0;
                 let ticks = clk / freq;
-                
                 let psc = u16(ticks / (1 << 16)).unwrap();
                 let psc = psc as u32;
                 tim.psc.write(|w| unsafe{w.bits(psc)} );
-                
                 let arr = u16(ticks / u32(psc + 1)).unwrap();
                 let arr = arr as u32;
                 tim.arr.write(|w| unsafe{ w.bits(arr) } );
@@ -351,5 +343,10 @@ macro_rules! hal {
 }
 
 hal! {
+<<<<<<< HEAD
     TIM2: (tim2, tim2en, tim2rst),
 }
+=======
+    TIM2: (_tim2, tim2en, tim2rst),
+}
+>>>>>>> temp
