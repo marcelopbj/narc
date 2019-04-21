@@ -265,12 +265,20 @@ macro_rules! gpio {
                 }
 
                 impl $PXi<Alternate> {
-<<<<<<< 61fe732a29e9fe9915e5fd586261300d00c4b400
-                    /// Configures the pin to serve as alternative function 2
-=======
 
+                    /// Configures the pin 0 to serve as alternative function
+                    pub fn af0(self, afr: &mut $CR) -> $PXi<AF0> {
+                        let af = 0;
+                        let offset = 4 * ($i % 8);
+
+                        afr.afr().modify(|r, w| unsafe {
+                            w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
+                        });
+
+                        $PXi { _mode: PhantomData }
+                    }
+                    
                     /// Configures the pin 2 to serve as alternative function
->>>>>>> encoder
                     pub fn af2(self, afr: &mut $CR) -> $PXi<AF2> {
                         let af = 2;
                         let offset = 4 * ($i % 8);
@@ -282,11 +290,7 @@ macro_rules! gpio {
                         $PXi { _mode: PhantomData }
                     }
 
-<<<<<<< 61fe732a29e9fe9915e5fd586261300d00c4b400
-                    /// Configures the pin to serve as alternative function 4
-=======
                     /// Configures the pin 4 to serve as alternative function
->>>>>>> encoder
                      pub fn af4(self, afr: &mut $CR) -> $PXi<AF4> {
                         let af = 4;
                         let offset = 4 * ($i % 8);
@@ -449,24 +453,15 @@ gpio!(GPIOA, gpioa, gpioa, iopaen, ioparst, PAx, [
 gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
     PB0: (pb0, 0, Analog, AFRL),
     PB1: (pb1, 1, Analog, AFRL),
-<<<<<<< 61fe732a29e9fe9915e5fd586261300d00c4b400
     PB2: (pb2, 2, Analog, AFRL),
-=======
     PB3: (pb3, 3, Analog, AFRL),
->>>>>>> encoder
     PB4: (pb4, 4, Analog, AFRL),
     PB5: (pb5, 5, Analog, AFRL),
     PB6: (pb6, 6, Analog, AFRL),
     PB7: (pb7, 7, Analog, AFRL),
 ]);
 
-<<<<<<< 61fe732a29e9fe9915e5fd586261300d00c4b400
 gpio!(GPIOC, gpioc, gpiob, iopcen, iopcrst, PCx, [
-    PC0: (pc0, 0, Analog, AFRL),
-]);
-=======
-/*gpio!(GPIOC, gpioc, gpioc, iopcen, iopcrst, PAx, [
     PC14: (pc14, 14, Analog, AFRH),
     PC15: (pc15, 15, Analog, AFRH),
-]);*/
->>>>>>> encoder
+]);

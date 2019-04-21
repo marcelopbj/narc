@@ -80,11 +80,6 @@
 //!
 //! ```
 
-
-
-
-
-
 use core::marker::PhantomData;
 use core::mem;
 
@@ -92,7 +87,7 @@ use cast::{u16, u32};
 use embedded_hal::{PwmPin};
 use stm32l052::{TIM2};
 
-use gpio::gpioa::{PA0, PA5, PA15};
+use gpio::gpioa::{PA0, PA1, PA5, PA15};
 use gpio::{AF2, AF5};
 use rcc::{APB1, Clocks};
 use time::Hertz;
@@ -348,5 +343,5 @@ macro_rules! hal {
 }
 
 hal! {
-    TIM2: (tim2, tim2en, tim2rst),
+    TIM2: (_tim2, tim2en, tim2rst),
 }

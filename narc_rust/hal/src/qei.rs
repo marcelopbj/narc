@@ -2,21 +2,41 @@ use core::u16;
 
 use embedded_hal::{Qei as QeiExt, Direction};
 
-use stm32l052::{TIM2, TIM22};
+use stm32l052::{TIM21, TIM22};
 
-use gpio::gpioa::{PA0, PA1, PA6, PA7};
-use gpio::{Analog};
-use rcc::{APB1, APB2};
-
-pub trait Pins<Tim> {}
-
-impl Pins<TIM22> for (PA6<AF5>, PA7<AF5>) {}
-
-impl Pins<TIM22> for (PA6<Analog>, PA7<Analog>) {}
+use gpio::gpioa::{PA2, PA3, PA6, PA7};
+use gpio::{AF0, AF5};
+use rcc::{APB2};
 
 pub struct Qei<TIM, PINS> {
     tim: TIM,
-    pins: PINS,
+    pins: PINS
+}
+
+pub trait Pins<Tim> {}
+
+impl Pins<TIM21> for (PA2<AF0>, PA3<AF0>) {}
+
+impl Pins<TIM22> for (PA6<AF5>, PA7<AF5>) {}
+
+pub trait QeiFunc: Sized {
+    type tim;
+    type apb;
+
+    fn qei<PINS>(self, pins: PINS, apb: &mut Self::apb) -> Qei<Self::tim, PINS>
+    where PINS: Pins<Self>;
+}
+
+impl QeiFunc for TIM21{
+    type tim = Self;
+    type apb = APB2;
+
+    fn qei<PINS>(self, pins: PINS, apb: &mut Self::apb) -> Qei<Self::tim, PINS>
+    where 
+        PINS: Pins<TIM21> 
+    {
+        Qei::_tim21(self, pins, apb)
+    }
 }
 
 impl QeiFunc for TIM22{
@@ -28,15 +48,6 @@ impl QeiFunc for TIM22{
         PINS: Pins<TIM22> 
     {
         Qei::_tim22(self, pins, apb)
-    }
-}
-
-impl<PINS> Qei<TIM22, PINS> {
-    pub fn tim22(tim: TIM22, pins: PINS, apb: &mut APB2) -> Self 
-    where 
-        PINS: Pins<TIM22> 
-    {
-        Qei::_tim22(tim, pins, apb)
     }
 }
 
@@ -101,6 +112,6 @@ macro_rules! hal {
 }
 
 hal! {
-    TIM2: (_tim2, APB1, tim2en, tim2rst),
+    TIM21: (_tim21, APB2, tim21en, tim21rst),
     TIM22: (_tim22, APB2, tim22en, tim22rst),
 }

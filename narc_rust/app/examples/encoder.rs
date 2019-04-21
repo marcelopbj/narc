@@ -42,9 +42,9 @@ use core::panic::PanicInfo;
 
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
 
-    let mot2 = gpioa.pa0.into_alternate(&mut gpioa.moder).af2(&mut gpioa.afrl);
     let mut led = gpioa.pa5.into_output(&mut gpioa.moder).push_pull(&mut gpioa.otyper);
     let mot1 = gpioa.pa1.into_alternate(&mut gpioa.moder).af2(&mut gpioa.afrl);
+    let mot2 = gpioa.pa0.into_alternate(&mut gpioa.moder).af2(&mut gpioa.afrl);
     let mut mot2_in2 = gpiob.pb6.into_output(&mut gpiob.moder).push_pull(&mut gpiob.otyper);
     let mut mot2_in1 = gpiob.pb7.into_output(&mut gpiob.moder).push_pull(&mut gpiob.otyper);
     let mut mot1_in1 = gpioc.pc14.into_output(&mut gpioc.moder).push_pull(&mut gpioc.otyper);
@@ -58,7 +58,14 @@ use core::panic::PanicInfo;
     
     led.set_high();
 
+    let qei_1 = hw.TIM21
+            .qei(
+                (mot1_enca, mot1_encb),
+                &mut rcc.apb2);
+        
 
+    qei_1.reset();
+    
     let qei_2 = hw.TIM22
             .qei(
                 (mot2_enca, mot2_encb),
@@ -66,14 +73,6 @@ use core::panic::PanicInfo;
         
 
     qei_2.reset();
-
-     let qei_1 = hw.TIM21
-            .qei(
-                (mot1_enca, mot1_encb),
-                &mut rcc.apb2);
-        
-
-    qei_1.reset();
 
     /*match qei.direction() {
         Direction::Downcounting => {
@@ -89,8 +88,6 @@ use core::panic::PanicInfo;
         else{
             led.set_low();
         }
-
-
      }
  }
 
@@ -101,4 +98,4 @@ use core::panic::PanicInfo;
      loop {
          atomic::compiler_fence(Ordering::SeqCst)
      }
- }0
+ }
