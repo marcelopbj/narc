@@ -28,3 +28,5 @@ version = "0.2.1"
 [dependencies.nrf24l01]
 git = "https://github.com/tsathishkumar/nrf24l01.git"
 version = "*"
+
+
