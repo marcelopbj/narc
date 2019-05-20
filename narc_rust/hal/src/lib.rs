@@ -23,3 +23,5 @@ pub mod dma;
 pub mod qei;
 pub mod spi;
 pub mod timer;
+pub mod constants;
+pub mod nrf24l01;

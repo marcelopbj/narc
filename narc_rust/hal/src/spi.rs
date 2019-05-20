@@ -94,7 +94,7 @@ macro_rules! hal {
                     //    });
 
                     // disable SS output
-                    //spi.cr2.write(|w| w.ssoe().clear_bit());//reset state
+                    spi.cr2.write(|w| w.ssoe().set_bit());//reset state
 
 
                     let br: u8 = match clocks.$pclkX().0 / freq.0 {
@@ -141,12 +141,6 @@ macro_rules! hal {
                             .clear_bit()
                             .br()
                             .bits(br)
-                            /*.ssi()
-                            .set_bit()
-                            .ssm()
-                            .set_bit()
-                            .crcen()
-                            .clear_bit()*/
                     });
 
                     Spi { spi, pins }
@@ -164,39 +158,27 @@ macro_rules! hal {
                 fn read(&mut self) -> nb::Result<u8, Error> {
                     let sr = self.spi.sr.read();
 
-                    Err(if sr.ovr().bit_is_set() {
-                        nb::Error::Other(Error::Overrun)
-                    } else if sr.modf().bit_is_set() {
-                        nb::Error::Other(Error::ModeFault)
-                    } else if sr.crcerr().bit_is_set() {
-                        nb::Error::Other(Error::Crc)
-                    } else if sr.rxne().bit_is_set() {
+                    if sr.rxne().bit_is_set() {
                         // NOTE(read_volatile) read only 1 byte (the svd2rust API only allows
                         // reading a half-word)
                         return Ok(unsafe {
                             ptr::read_volatile(&self.spi.dr as *const _ as *const u8)
                         });
                     } else {
-                        nb::Error::WouldBlock
-                    })
+                        Err(nb::Error::WouldBlock)
+                    }
                 }
 
                 fn send(&mut self, byte: u8) -> nb::Result<(), Error> {
                     let sr = self.spi.sr.read();
 
-                    Err(if sr.ovr().bit_is_set() {
-                        nb::Error::Other(Error::Overrun)
-                    } else if sr.modf().bit_is_set() {
-                        nb::Error::Other(Error::ModeFault)
-                    } else if sr.crcerr().bit_is_set() {
-                        nb::Error::Other(Error::Crc)
-                    } else if sr.txe().bit_is_set() {
+                    if sr.txe().bit_is_set() {
                         // NOTE(write_volatile) see note above
                         unsafe { ptr::write_volatile(&self.spi.dr as *const _ as *mut u8, byte) }
-                        return Ok(());
+                        Ok(())
                     } else {
-                        nb::Error::WouldBlock
-                    })
+                        Err(nb::Error::WouldBlock)
+                    }
                 }
             }
 

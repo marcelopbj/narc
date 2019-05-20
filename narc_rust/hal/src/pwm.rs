@@ -343,10 +343,5 @@ macro_rules! hal {
 }
 
 hal! {
-<<<<<<< HEAD
-    TIM2: (tim2, tim2en, tim2rst),
-}
-=======
     TIM2: (_tim2, tim2en, tim2rst),
 }
->>>>>>> temp

@@ -266,8 +266,6 @@ macro_rules! gpio {
 
                 impl $PXi<Alternate> {
 
-<<<<<<< HEAD
-=======
                     /// Configures the pin 0 to serve as alternative function
                     pub fn af0(self, afr: &mut $CR) -> $PXi<AF0> {
                         let af = 0;
@@ -280,7 +278,6 @@ macro_rules! gpio {
                         $PXi { _mode: PhantomData }
                     }
                     
->>>>>>> temp
                     /// Configures the pin 2 to serve as alternative function
                     pub fn af2(self, afr: &mut $CR) -> $PXi<AF2> {
                         let af = 2;
@@ -456,10 +453,7 @@ gpio!(GPIOA, gpioa, gpioa, iopaen, ioparst, PAx, [
 gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
     PB0: (pb0, 0, Analog, AFRL),
     PB1: (pb1, 1, Analog, AFRL),
-<<<<<<< HEAD
-=======
     PB2: (pb2, 2, Analog, AFRL),
->>>>>>> temp
     PB3: (pb3, 3, Analog, AFRL),
     PB4: (pb4, 4, Analog, AFRL),
     PB5: (pb5, 5, Analog, AFRL),
@@ -467,14 +461,7 @@ gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
     PB7: (pb7, 7, Analog, AFRL),
 ]);
 
-<<<<<<< HEAD
-/*gpio!(GPIOC, gpioc, gpioc, iopcen, iopcrst, PAx, [
-    PC14: (pc14, 14, Analog, AFRH),
-    PC15: (pc15, 15, Analog, AFRH),
-]);*/
-=======
 gpio!(GPIOC, gpioc, gpiob, iopcen, iopcrst, PCx, [
     PC14: (pc14, 14, Analog, AFRH),
     PC15: (pc15, 15, Analog, AFRH),
 ]);
->>>>>>> temp
