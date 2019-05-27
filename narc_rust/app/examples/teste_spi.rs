@@ -6,7 +6,6 @@ extern crate cortex_m_rt;
 extern crate narc_hal;
 extern crate embedded_hal;
 extern crate nrf24l01;
-//extern crate panic_abort; // panicking behavior
 
 use core::panic::PanicInfo;
 use core::sync::atomic::{self, Ordering};
@@ -22,7 +21,6 @@ use narc_hal::qei::*;
 use narc_hal::delay::Delay;
 use narc_hal::spi::Spi;
 use narc_hal::stm32l052::SPI1;
-//use narc_hal::nrf24l01::NRF24L01;
 
 use embedded_hal::spi::{MODE_0, Phase, Polarity};
 use embedded_hal::digital::OutputPin;
@@ -95,23 +93,34 @@ fn main() -> ! {
             &mut rcc.apb2);
 
     let mut nrf24l01 = NRF24L01::new(spi, nrf24_csn, nrf24_ce, 1, 4).unwrap();
-
+    
     nrf24l01.set_raddr("serv1".as_bytes()).unwrap();//configuração do endereço de recepção
     nrf24l01.config().unwrap();//ativa o rádio e coloca o chip no estado de Standby I, 1,5ms depois
-
+    
     pwm.set_duty(max / max);
+
+    let mut buffer = [0; 4]; //buffer = [0,0,0,0]
 
      loop{
         if !nrf24l01.is_sending().unwrap() {
-            if nrf24l01.data_ready().unwrap() {
-                let mut buffer = [0; 4]; //buffer = [0,0,0,0]
-                nrf24l01.get_data(&mut buffer).unwrap(); 
-                nrf24l01.set_taddr("clie1".as_bytes()).unwrap();//configuração do endereço de transmissão
-                nrf24l01.send(&buffer).unwrap();
-                pwm.set_duty(max / 1);
+            if !button.is_low(){
+                if nrf24l01.data_ready().unwrap() {
+                    //let mut buffer = [0; 4]; //buffer = [0,0,0,0]
+                    nrf24l01.get_data(&mut buffer).unwrap(); 
+                    //nrf24l01.set_taddr("serv1".as_bytes()).unwrap();//configuração do endereço de transmissão
+                    //nrf24l01.send(&buffer).unwrap();
+                    pwm.set_duty(max / 1);
+                    delay.delay_ms(1_000_u32);
 
-            } else {
-                pwm.set_duty(max / max);
+                } else {
+                    pwm.set_duty(max / max);
+                }
+            }
+            else if !button.is_high(){
+                nrf24l01.set_taddr("serv1".as_bytes()).unwrap();//configuração do endereço de transmissão
+                nrf24l01.send(&buffer).unwrap();
+                pwm.set_duty(max / 2);
+
             }
         }
      }
